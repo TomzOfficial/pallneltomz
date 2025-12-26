@@ -1,14 +1,20 @@
 #!/bin/bash
+set -e
 
 DOMAIN=$1
 EMAIL=$2
 
-ADMIN_USER="admin$(date +%s)"
-ADMIN_PASS=$(openssl rand -base64 10)
+ADMIN_USER="admin"
+ADMIN_PASS="admin123"
 
-echo "== INSTALLING PANEL =="
+apt update -y
+apt install -y curl wget sudo
 
-curl -s https://pterodactyl-installer.se | bash <<EOF
+curl -sSL https://raw.githubusercontent.com/pterodactyl-installer/pterodactyl-installer/master/install.sh -o installer.sh
+chmod +x installer.sh
+
+# AUTO INSTALL PANEL
+bash installer.sh <<EOF
 0
 y
 $DOMAIN
@@ -19,7 +25,7 @@ y
 y
 EOF
 
-cd /var/www/pterodactyl || exit
+cd /var/www/pterodactyl
 
 php artisan p:user:make <<EOF
 $EMAIL
@@ -30,10 +36,3 @@ $ADMIN_PASS
 $ADMIN_PASS
 yes
 EOF
-
-echo "============================="
-echo "PANEL INSTALLED SUCCESSFULLY"
-echo "URL  : https://$DOMAIN"
-echo "USER : $ADMIN_USER"
-echo "PASS : $ADMIN_PASS"
-echo "============================="
